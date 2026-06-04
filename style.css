@@ -1,0 +1,429 @@
+/* Color palette so in any changes just modify it in root */
+:root {
+    --bg-color: #ffffff;
+    --primary-cyan: #55d6e0;
+    --light-cyan: #ccf7f3;
+    --card-blue: #bfe9f9;
+    --text-dark: #333;
+    --text-gray: #777;
+    --accent-red: #ff5e5e;
+    --accent-green: #38efbd;
+}
+
+/* Global Reset */
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+}
+
+body { 
+    background-color: var(--bg-color); 
+    color: var(--text-dark); 
+    overflow-x: hidden; 
+}
+
+/* Layout Container (Mobile First) */
+.app-container { 
+    max-width: 500px; 
+    margin: 0 auto; 
+    min-height: 100vh; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+/* Header Styles */
+.main-header { 
+    padding: 20px; 
+}
+
+.date-selector {
+    border: 3px solid var(--primary-cyan);
+    border-radius: 15px;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: var(--text-dark);
+}
+
+.add-task-bar {
+    background-color: var(--light-cyan);
+    margin-top: 20px;
+    border-radius: 10px;
+    display: flex;
+    padding: 10px 15px;
+    align-items: center;
+}
+
+.add-task-bar input {
+    background: none; 
+    border: none; 
+    flex-grow: 1; 
+    outline: none; 
+    font-size: 1.1rem; 
+    color: #66ac9e;
+}
+
+.add-btn {
+    background: white; 
+    border: none; 
+    border-radius: 50%; 
+    width: 30px; 
+    height: 30px;
+    color: var(--primary-cyan); 
+    cursor: pointer;
+}
+
+/* Main Content & Task Cards */
+.content { 
+    flex-grow: 1; 
+    padding: 20px; 
+}
+
+.task-card-wrapper { 
+    display: flex; 
+    gap: 15px; 
+    margin-bottom: 30px; 
+}
+
+.time-column {
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    font-size: 0.9rem; 
+    color: var(--text-gray); 
+    width: 45px;
+}
+
+.dotted-line {
+    flex-grow: 1; 
+    border-left: 2px dashed var(--accent-green); 
+    margin: 5px 0;
+}
+
+.task-card {
+    background-color: var(--card-blue);
+    flex-grow: 1;
+    border-radius: 15px;
+    padding: 15px;
+    position: relative; /* Necessary for absolute positioning of buttons */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.badge {
+    background: white; 
+    padding: 4px 12px; 
+    border-radius: 20px; 
+    font-size: 0.8rem; 
+    font-weight: bold; 
+    display: inline-block;
+}
+
+.title-field {
+    background: white; 
+    margin-top: 10px; 
+    padding: 5px 15px;
+    border-radius: 5px; 
+    font-weight: 500;
+    width: calc(100% - 40px); /* Leave room for buttons */
+}
+
+.card-body {
+    background: white; 
+    margin-top: 10px; 
+    padding: 10px;
+    border-radius: 10px; 
+    min-height: 80px; 
+    color: var(--text-gray); 
+    font-size: 0.85rem;
+    width: calc(100% - 40px); /* Leave room for buttons */
+}
+
+.card-body ol { 
+    padding-left: 20px; 
+}
+
+/* Action Buttons - UPDATED POSITIONING */
+.action-buttons {
+    position: absolute; 
+    right: 12px; 
+    top: 50%; 
+    /* Centers vertically then nudges down by 5px as requested */
+    transform: translateY(-50%) translateY(5px); 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px;
+}
+
+.action-buttons button {
+    border: none; 
+    border-radius: 50%; 
+    width: 32px; 
+    height: 32px; 
+    color: white; 
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-delete { background-color: var(--accent-red); }
+.btn-edit { background-color: var(--primary-cyan); }
+.btn-complete { background-color: var(--accent-green); }
+
+/* Footer & Nav */
+.main-footer { 
+    position: sticky; 
+    bottom: 0; 
+    background: white; 
+    padding-top: 10px; 
+}
+
+.pagination { 
+    display: flex; 
+    justify-content: space-around; 
+    align-items: center; 
+    padding: 15px; 
+}
+
+.date-pill {
+    border: 3px solid var(--primary-cyan); 
+    border-radius: 15px;
+    padding: 8px 30px; 
+    font-weight: bold; 
+    font-size: 1.1rem;
+}
+
+.nav-arrow {
+    background: none; 
+    border: 2px solid var(--primary-cyan); 
+    border-radius: 50%;
+    width: 40px; 
+    height: 40px; 
+    color: var(--primary-cyan);
+    cursor: pointer;
+}
+
+.bottom-nav { 
+    display: flex; 
+    height: 70px; 
+}
+
+.nav-item {
+    flex: 1; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 10px; 
+    cursor: pointer;
+    text-decoration: none; /* Enlève le souligné des liens */
+    font-weight: bold; 
+    font-size: 1.1rem;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.nav-item.active { 
+    background-color: var(--primary-cyan); 
+    color: white; 
+    border-radius: 0px 0px 0 0; 
+}
+
+.nav-item.track { 
+    background-color: var(--accent-green); 
+    color: #1a5e4d; 
+}
+/* Tracking Page Specifics */
+.filter-tabs {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.tab {
+    background-color: var(--light-cyan);
+    border: none;
+    padding: 8px 25px;
+    border-radius: 15px;
+    color: #66ac9e;
+    font-weight: 500;
+}
+
+.stats-container {
+    background-color: var(--light-cyan);
+    margin: 0 20px;
+    border-radius: 10px;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    padding: 15px 5px;
+    text-align: center;
+}
+
+.stat-card {
+    border-right: 1px solid #999;
+}
+
+.stat-card:last-child { border: none; }
+
+.stat-card p { font-size: 0.65rem; color: #66ac9e; margin-bottom: 5px; }
+.stat-card h3 { font-size: 1.4rem; }
+
+/* Battery Layout */
+.center-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 40px;
+}
+
+.battery-container {
+    width: 160px;
+    position: relative;
+}
+
+.battery-cap {
+    width: 60px;
+    height: 15px;
+    background-color: var(--card-blue);
+    margin: 0 auto;
+    border-radius: 8px 8px 0 0;
+}
+
+.battery-body {
+    width: 100%;
+    height: 320px;
+    background-color: var(--card-blue);
+    border-radius: 20px;
+    padding: 20px 15px;
+    display: flex;
+    flex-direction: column-reverse; /* Stack from bottom up */
+    gap: 8px;
+    position: relative;
+}
+
+/* Marker labels (100%, 50%, 0%) */
+.marker {
+    position: absolute;
+    right: -60px;
+    font-size: 0.9rem;
+    color: #55d6e0;
+}
+.marker::before {
+    content: "";
+    position: absolute;
+    left: -15px;
+    top: 50%;
+    width: 12px;
+    height: 1px;
+    background-color: #55d6e0;
+}
+
+.m-100 { top: 20px; }
+.m-50 { top: 50%; transform: translateY(-50%); color: #e9e54d; }
+.m-50::before { background-color: #e9e54d; }
+.m-0 { bottom: 20px; color: #ff5e5e; }
+.m-0::before { background-color: #ff5e5e; }
+
+.battery-level {
+    height: 25px;
+    width: 100%;
+    border-radius: 2px;
+}
+
+/* Nav Item Fix (Square corners as requested) */
+.nav-item.active { 
+    background-color: var(--primary-cyan); 
+    color: white; 
+    border-radius: 0; 
+}
+
+/* Link removal decoration */
+.bottom-nav { 
+    display: flex; 
+    height: 70px; 
+    width: 100%;
+}
+.nav-item:not(.track), 
+.nav-item:not(.track).active {
+    background-color: var(--primary-cyan); 
+    color: #1a5e4d; /* Couleur du texte par défaut (sombre) */
+}
+
+/* Le bouton Track est TOUJOURS vert */
+.nav-item.track, 
+.nav-item.track.active {
+    background-color: var(--accent-green);
+    color: #1a5e4d; /* Couleur du texte par défaut (sombre) */
+}
+
+/* CHANGEMENT DU FRONT (Texte/Icône) UNIQUEMENT */
+
+/* Quand un bouton est actif, son texte devient BLANC */
+.nav-item.active {
+    color: white !important; 
+    border-radius: 0; /* Coins carrés comme demandé */
+}
+
+/* Pour s'assurer que l'icône suit la couleur du texte */
+.nav-item i {
+    font-size: 1.2rem;
+    display: inline-block; /* Assure la visibilité de l'icône */
+}
+
+/* ==========================================================================
+   NEW WORKPACK MODIFICATIONS: COMPLETED PILL VIEW STATES
+   ========================================================================== */
+
+/* Keeps the layout container centered and vertically consistent */
+.task-card-wrapper.completed-pill-state {
+    align-items: center;
+}
+
+/* Clean interactive pill architecture layout matching user prototype design precisely */
+.task-card-pill {
+    display: flex;
+    align-items: center;
+    background-color: #ccf7ed; /* Light mint/teal green container background */
+    border-radius: 40px;       /* Sleek pill edge contours */
+    padding: 10px 20px;
+    flex-grow: 1;
+    gap: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+    animation: foldIn 0.25s ease-out forwards;
+}
+
+/* Interactive custom check button reset styles */
+.btn-undo-complete {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    color: #31dba9;            /* Matching the accent check green hue */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* White task capsule capsule title shield matching custom screenshot layout */
+.pill-title {
+    background-color: #ffffff;
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-weight: 500;
+    color: var(--text-dark);
+    flex-grow: 1;
+    text-align: center;
+    font-size: 0.95rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+@keyframes foldIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}

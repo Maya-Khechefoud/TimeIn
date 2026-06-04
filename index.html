@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeIn - Schedule</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="modal.css">
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="main-header">
+            <div class="date-selector">
+                <span class="date-header-text">Today</span> 
+                <i class="fa-regular fa-calendar-days"></i>
+            </div>
+            <div class="add-task-bar">
+                <input type="text" placeholder="Add a Task">
+                <button class="add-btn"><i class="fa-solid fa-plus"></i></button>
+            </div>
+        </header>
+
+        <main class="content">
+            </main>
+
+        <footer class="main-footer">
+            <div class="pagination">
+                <button class="nav-arrow"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="date-pill">05 / 06 / 2026</div>
+                <button class="nav-arrow"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+           <nav class="bottom-nav">
+                <div class="nav-item active">Schedule <i class="fa-solid fa-calendar-check"></i></div>
+                <a href="index2.html" class="nav-item track">Track <i class="fa-solid fa-chart-simple"></i></a>
+           </nav>
+        </footer>
+    </div>
+
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Create New Task</h2>
+                <button class="modal-close-btn" id="closeModalBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="modalTaskTitle">Task Title</label>
+                    <input type="text" id="modalTaskTitle" placeholder="e.g., Study Session">
+                </div>
+
+                <div class="form-group">
+                    <label>Category</label>
+                    <div class="category-options">
+                        <label class="category-radio">
+                            <input type="radio" name="modalCategory" value="Personal" checked>
+                            <span class="radio-badge personal">☀️ Personal</span>
+                        </label>
+                        <label class="category-radio">
+                            <input type="radio" name="modalCategory" value="Study">
+                            <span class="radio-badge study">🔵 Study</span>
+                        </label>
+                        <label class="category-radio">
+                            <input type="radio" name="modalCategory" value="Business">
+                            <span class="radio-badge business">💼 Business</span>
+                        </label>
+                        <label class="category-radio">
+                            <input type="radio" name="modalCategory" value="Shopping">
+                            <span class="radio-badge shopping">🛍️ Shopping</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="modalStartTime">Start Time</label>
+                        <input type="text" id="modalStartTime" placeholder="e.g., 8 am">
+                    </div>
+                    <div class="form-group">
+                        <label for="modalEndTime">End Time</label>
+                        <input type="text" id="modalEndTime" placeholder="e.g., 10 pm">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="modalTaskDescription">Description / Notes</label>
+                    <div class="subtask-input-wrapper">
+                        <textarea id="modalTaskDescription" placeholder="Enter details or descriptions here..." rows="4" style="width: 100%; border: 1px solid #ccc; border-radius: 8px; padding: 10px; resize: none; font-size: 0.95rem; outline: none; font-family: inherit;"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-save-task" id="saveTaskBtn">Save Task</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="schedule.js"></script>
+</body>
+</html>

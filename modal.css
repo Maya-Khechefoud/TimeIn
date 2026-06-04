@@ -1,0 +1,176 @@
+/* --- MODAL OVERLAY --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6); /* Darkens the schedule page behind it */
+    backdrop-filter: blur(4px); /* Premium blurry background look */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Makes sure it sits on top of everything else */
+    
+    /* HIDDEN BY DEFAULT */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* Class we will add with JS to make the modal pop up */
+.modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* --- MODAL CARD --- */
+.modal-card {
+    background-color: #ffffff;
+    width: 90%;
+    max-width: 400px;
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* --- HEADERS & TEXT --- */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    font-size: 1.4rem;
+    color: #1a5e4d; /* Matches your app's dark green/mint aesthetic */
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    color: #a0aec0;
+    cursor: pointer;
+}
+
+/* --- FORM LAYOUTS --- */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.form-row {
+    display: flex;
+    gap: 16px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+label {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #4a5568;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input[type="text"]:focus {
+    border-color: var(--primary-cyan); /* Highlights blue when typing */
+}
+
+/* --- CATEGORY RADIO BADGES --- */
+.category-options {
+    display: flex;
+    gap: 12px;
+}
+
+.category-radio {
+    cursor: pointer;
+    flex: 1;
+}
+
+/* Hide the ugly default browser checkbox circle */
+.category-radio input[type="radio"] {
+    display: none;
+}
+
+/* Style our custom badges inside the form */
+.radio-badge {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    border: 2px solid transparent;
+    opacity: 0.5;
+    transition: all 0.2s;
+}
+
+/* When checked, make it fully visible and add a distinct border border */
+.category-radio input[type="radio"]:checked + .radio-badge {
+    opacity: 1;
+    border-color: #1a5e4d;
+}
+
+/* --- SUBTASK FIELD --- */
+.subtask-input-wrapper {
+    display: flex;
+    gap: 8px;
+}
+
+.subtask-add-btn {
+    background-color: var(--primary-cyan);
+    border: none;
+    color: white;
+    width: 45px;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.modal-subtasks-list {
+    margin-top: 8px;
+    padding-left: 20px;
+    color: #4a5568;
+    font-size: 0.95rem;
+}
+
+.modal-subtasks-list li {
+    margin-bottom: 4px;
+}
+
+/* --- SAVE BUTTON --- */
+.btn-save-task {
+    width: 100%;
+    background-color: var(--accent-green);
+    color: #1a5e4d;
+    border: none;
+    padding: 14px;
+    border-radius: 14px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-save-task:hover {
+    background-color: #2edca9;
+}
