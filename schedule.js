@@ -1,29 +1,17 @@
-// Global App State: Load all tasks or start empty
-let tasks = JSON.parse(localStorage.getItem('myAppState')) || [
-    {
-        id: "task-1",
-        title: "Morning Routine",
-        category: "Personal",
-        startTime: "8 am",
-        endTime: "9 am",
-        date: "25/03/2026", 
-        completed: true, 
-        description: "wake up, go to bathroom, organize room, wash face"
-    },
-    {
-        id: "task-2",
-        title: "study session",
-        category: "study",
-        startTime: "8 pm",
-        endTime: "10 pm",
-        date: "25/03/2026", 
-        completed: false,
-        description: "1 hour poo, 30 min write proba, 30 min isi"
-    }
-];
+// Global App State: Load all tasks or start empty (Perfect clean slate for new users)
+let tasks = JSON.parse(localStorage.getItem('myAppState')) || [];
 
-// Active Date Tracking Engine (Starts on your default baseline design date)
-let currentDate = new Date(2026, 2, 25); // March 25, 2026
+// Active Date Tracking Engine: Read synchronized date or start exactly on today's real date!
+let savedDateString = localStorage.getItem('activeScheduleDate');
+let currentDate;
+
+if (savedDateString) {
+    const dateParts = savedDateString.split('/');
+    currentDate = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+} else {
+    currentDate = new Date(); // Automatically uses the live real-world date
+}
+
 let currentEditTaskId = null;
 
 function saveToLocalStorage() {
