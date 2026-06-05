@@ -16,16 +16,16 @@ function formatStorageDateKey(dateObj) {
     return `${day}/${month}/${year}`;
 }
 
-// FIXED: Instead of a hardcoded string, default to the user's real live machine date!
+// SMART DATE ENGINE: Overwrite old test strings dynamically with today's live data
 let savedDateString = localStorage.getItem('activeScheduleDate');
 let currentDate;
 
-if (savedDateString) {
+if (savedDateString && savedDateString !== "25/03/2026" && savedDateString !== "25 / 03 / 2026") {
     const dateParts = savedDateString.split('/');
     currentDate = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
 } else {
-    // If no date is saved yet, open up exactly to today's live date automatically
-    currentDate = new Date();
+    currentDate = new Date(); // Fallback straight to today's real system date
+    localStorage.setItem('activeScheduleDate', formatStorageDateKey(currentDate));
 }
 
 document.addEventListener('DOMContentLoaded', () => {
