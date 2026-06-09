@@ -239,6 +239,7 @@ body {
     background-color: var(--accent-green); 
     color: #1a5e4d; 
 }
+
 /* Tracking Page Specifics */
 .filter-tabs {
     display: flex;
@@ -265,6 +266,16 @@ body {
     text-align: center;
 }
 
+.nav-item.active {
+    color: white !important; 
+    border-radius: 0; 
+}
+
+.nav-item i {
+    font-size: 1.2rem;
+    display: inline-block; 
+}
+
 .stat-card {
     border-right: 1px solid #999;
 }
@@ -274,7 +285,7 @@ body {
 .stat-card p { font-size: 0.65rem; color: #66ac9e; margin-bottom: 5px; }
 .stat-card h3 { font-size: 1.4rem; }
 
-/* Battery Layout */
+/* Battery Layout Base */
 .center-content {
     display: flex;
     justify-content: center;
@@ -303,7 +314,7 @@ body {
     padding: 20px 15px;
     display: flex;
     flex-direction: column-reverse; /* Stack from bottom up */
-    gap: 8px;
+    gap: 6px; 
     position: relative;
 }
 
@@ -325,16 +336,31 @@ body {
 }
 
 .m-100 { top: 20px; }
-.m-50 { top: 50%; transform: translateY(-50%); color: #e9e54d; }
-.m-50::before { background-color: #e9e54d; }
-.m-0 { bottom: 20px; color: #ff5e5e; }
-.m-0::before { background-color: #ff5e5e; }
+.m-50 { top: 50%; transform: translateY(-50%); color: #edd655; }
+.m-50::before { background-color: #edd655; }
+.m-0 { bottom: 20px; color: #ff5252; }
+.m-0::before { background-color: #ff5252; }
 
+/* Expanded 9-Shade Level Structural Base and Layout Distribution */
 .battery-level {
     height: 25px;
     width: 100%;
-    border-radius: 2px;
+    border-radius: 4px;
+    transition: all 0.2s ease-in-out;
 }
+
+/* ==========================================================================
+   UPDATED: 9-SHADE EXACT COLOR CODES FROM USER IMAGE
+   ========================================================================== */
+.level-1 { background-color: #ff5252 !important; } /* Level 1: Bottom Dark Coral Red */
+.level-2 { background-color: #ff5b5b !important; } /* Level 2: Crisp Light Coral Red */
+.level-3 { background-color: #ff8e61 !important; } /* Level 3: Deep Salmon Orange */
+.level-4 { background-color: #ff9d6b !important; } /* Level 4: Soft Pastel Orange */
+.level-5 { background-color: #fcd573 !important; } /* Level 5: Midpoint Mango Yellow */
+.level-6 { background-color: #d1f274 !important; } /* Level 6: Soft Chartreuse/Lime */
+.level-7 { background-color: #a4f962 !important; } /* Level 7: Bright Lime Green */
+.level-8 { background-color: #83f52a !important; } /* Level 8: Vibrant Spring Green */
+.level-9 { background-color: #5cef0a !important; } /* Level 9: Ultimate Neon Green Peak */
 
 /* Nav Item Fix (Square corners as requested) */
 .nav-item.active { 
@@ -352,28 +378,14 @@ body {
 .nav-item:not(.track), 
 .nav-item:not(.track).active {
     background-color: var(--primary-cyan); 
-    color: #1a5e4d; /* Couleur du texte par défaut (sombre) */
+    color: #1a5e4d; 
 }
 
 /* Le bouton Track est TOUJOURS vert */
 .nav-item.track, 
 .nav-item.track.active {
     background-color: var(--accent-green);
-    color: #1a5e4d; /* Couleur du texte par défaut (sombre) */
-}
-
-/* CHANGEMENT DU FRONT (Texte/Icône) UNIQUEMENT */
-
-/* Quand un bouton est actif, son texte devient BLANC */
-.nav-item.active {
-    color: white !important; 
-    border-radius: 0; /* Coins carrés comme demandé */
-}
-
-/* Pour s'assurer que l'icône suit la couleur du texte */
-.nav-item i {
-    font-size: 1.2rem;
-    display: inline-block; /* Assure la visibilité de l'icône */
+    color: #1a5e4d; 
 }
 
 /* ==========================================================================
@@ -389,8 +401,8 @@ body {
 .task-card-pill {
     display: flex;
     align-items: center;
-    background-color: #ccf7ed; /* Light mint/teal green container background */
-    border-radius: 40px;       /* Sleek pill edge contours */
+    background-color: #ccf7ed; 
+    border-radius: 40px;       
     padding: 10px 20px;
     flex-grow: 1;
     gap: 15px;
@@ -403,7 +415,7 @@ body {
     background: none;
     border: none;
     font-size: 1.8rem;
-    color: #31dba9;            /* Matching the accent check green hue */
+    color: #31dba9;            
     cursor: pointer;
     display: flex;
     align-items: center;

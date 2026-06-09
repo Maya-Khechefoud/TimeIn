@@ -1,17 +1,5 @@
 // Global App State: Load all tasks or start empty (Perfect clean slate for new users)
 let tasks = JSON.parse(localStorage.getItem('myAppState')) || [];
-
-// Active Date Tracking Engine: Read synchronized date or start exactly on today's real date!
-let savedDateString = localStorage.getItem('activeScheduleDate');
-let currentDate;
-
-if (savedDateString) {
-    const dateParts = savedDateString.split('/');
-    currentDate = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
-} else {
-    currentDate = new Date(); // Automatically uses the live real-world date
-}
-
 let currentEditTaskId = null;
 
 function saveToLocalStorage() {
@@ -34,6 +22,18 @@ function formatStorageDateKey(dateObj) {
     return `${day}/${month}/${year}`;
 }
 
+// Active Date Tracking Engine: Default to today's real live date on fresh load!
+let savedDateString = sessionStorage.getItem('activeScheduleDate');
+let currentDate;
+
+if (savedDateString && savedDateString !== "25/03/2026" && savedDateString !== "25 / 03 / 2026") {
+    const dateParts = savedDateString.split('/');
+    currentDate = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+} else {
+    currentDate = new Date(); // Automatically uses the live real-world date
+    sessionStorage.setItem('activeScheduleDate', formatStorageDateKey(currentDate));
+}
+
 document.addEventListener('DOMContentLoaded', () => {   
     // DOM Elements selection
     const addTaskBar = document.querySelector('.add-task-bar input'); 
@@ -45,21 +45,22 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Date navigation elements
     const datePill = document.querySelector('.date-pill');
-    const dateHeaderText = document.querySelector('.date-header-text'); // Targets our new HTML label
+    const dateHeaderText = document.querySelector('.date-header-text'); 
     const prevArrow = document.querySelectorAll('.nav-arrow')[0];
     const nextArrow = document.querySelectorAll('.nav-arrow')[1];
 
-    // UPDATED ENGINE: Calculates if a date is Today, Yesterday, Tomorrow, or a standard weekday
+    // Calculates if a date is Today, Yesterday, Tomorrow, or a standard weekday
     function updateDateDisplay() {
         if (datePill) {
             datePill.innerText = formatDateString(currentDate);
         }
 
-        // 1. Calculate Human Readable Smart Titles
+        // Calculate Human Readable Smart Titles
         if (dateHeaderText) {
-            const realToday = new Date(); // Gets the true current real-world date
+            const realToday = new Date(); 
             
             // Strip out hours, minutes, and seconds from our math so we are purely comparing day blocks
+            // Note: Ensuring static values evaluate accurately relative to June 9, 2026
             const targetDateMidnight = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
             const realTodayMidnight = new Date(realToday.getFullYear(), realToday.getMonth(), realToday.getDate());
             
@@ -74,14 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (dayDiff === 1) {
                 dateHeaderText.innerText = "Tomorrow";
             } else {
-                // Fallback: If it's far away, display the actual day name beautifully (e.g., "Monday")
                 const options = { weekday: 'long' };
                 dateHeaderText.innerText = currentDate.toLocaleDateString('en-US', options);
             }
         }
 
-        // 2. Save active target day to browser memory so index2.html stays synced
-        localStorage.setItem('activeScheduleDate', formatStorageDateKey(currentDate));
+        // Save active target day to browser session memory so tracking pages stay synced without overwriting persistence defaults
+        sessionStorage.setItem('activeScheduleDate', formatStorageDateKey(currentDate));
         renderTasks(); 
     }
 
@@ -278,8 +278,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentEditTaskId = taskId;
 
                     document.getElementById('modalTaskTitle').value = targetTask.title;
-                    document.getElementById('modalStartTime').value = targetTask.startTime;
-                    document.getElementById('modalEndTime').value = targetTask.endTime;
+                    
+                    // FIXED: If time values are baseline dots, keep modal text inputs clean/blank
+                    document.getElementById('modalStartTime').value = targetTask.startTime === "." ? "" : targetTask.startTime;
+                    document.getElementById('modalEndTime').value = targetTask.endTime === "." ? "" : targetTask.endTime;
                     
                     const descField = document.getElementById('modalTaskDescription');
                     if (descField) {
@@ -319,8 +321,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (targetTask) {
                     targetTask.title = titleInput;
                     targetTask.category = selectedCategory;
-                    targetTask.startTime = startTimeInput || "12 am";
-                    targetTask.endTime = endTimeInput || "12 pm";
+                    // FIXED: Uses single dot baseline fallback for clean aesthetic symmetry if input is empty
+                    targetTask.startTime = startTimeInput || ".";
+                    targetTask.endTime = endTimeInput || ".";
                     targetTask.description = descriptionInput;
                 }
             } else {
@@ -328,8 +331,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     id: "task-" + Date.now(),
                     title: titleInput,
                     category: selectedCategory,
-                    startTime: startTimeInput || "12 am",
-                    endTime: endTimeInput || "12 pm",
+                    // FIXED: Uses single dot baseline fallback for clean aesthetic symmetry if input is empty
+                    startTime: startTimeInput || ".",
+                    endTime: endTimeInput || ".",
                     date: formatStorageDateKey(currentDate), 
                     completed: false,
                     description: descriptionInput

@@ -16,8 +16,8 @@ function formatStorageDateKey(dateObj) {
     return `${day}/${month}/${year}`;
 }
 
-// SMART DATE ENGINE: Overwrite old test strings dynamically with today's live data
-let savedDateString = localStorage.getItem('activeScheduleDate');
+// SMART DATE ENGINE: Always launch on today's live date for a fresh session!
+let savedDateString = sessionStorage.getItem('activeScheduleDate');
 let currentDate;
 
 if (savedDateString && savedDateString !== "25/03/2026" && savedDateString !== "25 / 03 / 2026") {
@@ -25,7 +25,7 @@ if (savedDateString && savedDateString !== "25/03/2026" && savedDateString !== "
     currentDate = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
 } else {
     currentDate = new Date(); // Fallback straight to today's real system date
-    localStorage.setItem('activeScheduleDate', formatStorageDateKey(currentDate));
+    sessionStorage.setItem('activeScheduleDate', formatStorageDateKey(currentDate));
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateTrackerMetrics() {
         const targetDateString = formatStorageDateKey(currentDate);
-        localStorage.setItem('activeScheduleDate', targetDateString);
+        sessionStorage.setItem('activeScheduleDate', targetDateString);
         
         if (datePill) {
             datePill.innerText = formatDateString(currentDate);
@@ -74,9 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (completedText) completedText.innerText = completed;
         if (uncompletedText) uncompletedText.innerText = uncompleted;
 
-        const barsToLightUp = total > 0 ? Math.ceil((percentage / 100) * 7) : 0;
+        // FIXED: Now maps progress flawlessly across 9 bars instead of 7 so 100% fills up completely!
+        const barsToLightUp = total > 0 ? Math.ceil((percentage / 100) * 9) : 0;
 
-        for (let i = 1; i <= 7; i++) {
+        // FIXED: Loop updated to parse and clear elements through level-9 safely
+        for (let i = 1; i <= 9; i++) {
             const barElement = document.querySelector(`.level-${i}`);
             if (barElement) {
                 if (i <= barsToLightUp) {
