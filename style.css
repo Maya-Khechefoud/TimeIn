@@ -88,6 +88,10 @@ body {
     display: flex; 
     gap: 15px; 
     margin-bottom: 30px; 
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    user-select: none; /* Prevents unwanted text highlight on long press */
+    -webkit-user-select: none;
+    touch-action: manipulation; /* Prevents browser scroll interference during hold */
 }
 
 .time-column {
@@ -147,30 +151,33 @@ body {
     padding-left: 20px; 
 }
 
-/* Action Buttons - UPDATED POSITIONING */
+/* Action Buttons - ADAPTIVE FLEXIBLE LAYOUT */
 .action-buttons {
     position: absolute; 
-    right: 12px; 
-    top: 50%; 
-    /* Centers vertically then nudges down by 5px as requested */
-    transform: translateY(-50%) translateY(5px); 
+    right: 10px; 
+    top: 10px;
+    bottom: 10px;
     display: flex; 
     flex-direction: column; 
-    gap: 10px;
+    justify-content: space-evenly; /* Distributes buttons evenly based on card height */
+    align-items: center;
+    gap: 4px;
 }
 
 .action-buttons button {
     border: none; 
     border-radius: 50%; 
-    width: 32px; 
-    height: 32px; 
+    width: 28px; 
+    height: 28px; 
+    min-height: 24px; /* Prevents button collapse on small cards */
     color: white; 
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    flex-shrink: 1; /* Allows proportional scaling when card height reduces */
 }
 
 .btn-delete { background-color: var(--accent-red); }
@@ -213,6 +220,7 @@ body {
 .bottom-nav { 
     display: flex; 
     height: 70px; 
+    width: 100%;
 }
 
 .nav-item {
@@ -222,22 +230,34 @@ body {
     justify-content: center; 
     gap: 10px; 
     cursor: pointer;
-    text-decoration: none; /* Enlève le souligné des liens */
+    text-decoration: none;
     font-weight: bold; 
     font-size: 1.1rem;
     border: none;
     transition: all 0.2s ease;
 }
 
-.nav-item.active { 
+.nav-item:not(.track), 
+.nav-item:not(.track).active {
     background-color: var(--primary-cyan); 
-    color: white; 
-    border-radius: 0px 0px 0 0; 
+    color: #1a5e4d; 
 }
 
-.nav-item.track { 
-    background-color: var(--accent-green); 
+.nav-item.track, 
+.nav-item.track.active {
+    background-color: var(--accent-green);
     color: #1a5e4d; 
+}
+
+.nav-item.active { 
+    background-color: var(--primary-cyan); 
+    color: white !important; 
+    border-radius: 0; 
+}
+
+.nav-item i {
+    font-size: 1.2rem;
+    display: inline-block; 
 }
 
 /* Tracking Page Specifics */
@@ -264,16 +284,6 @@ body {
     grid-template-columns: 1.2fr 1fr 1fr;
     padding: 15px 5px;
     text-align: center;
-}
-
-.nav-item.active {
-    color: white !important; 
-    border-radius: 0; 
-}
-
-.nav-item i {
-    font-size: 1.2rem;
-    display: inline-block; 
 }
 
 .stat-card {
@@ -349,60 +359,27 @@ body {
     transition: all 0.2s ease-in-out;
 }
 
-/* ==========================================================================
-   UPDATED: 9-SHADE EXACT COLOR CODES FROM USER IMAGE
-   ========================================================================== */
-.level-1 { background-color: #ff5252 !important; } /* Level 1: Bottom Dark Coral Red */
-.level-2 { background-color: #ff5b5b !important; } /* Level 2: Crisp Light Coral Red */
-.level-3 { background-color: #ff8e61 !important; } /* Level 3: Deep Salmon Orange */
-.level-4 { background-color: #ff9d6b !important; } /* Level 4: Soft Pastel Orange */
-.level-5 { background-color: #fcd573 !important; } /* Level 5: Midpoint Mango Yellow */
-.level-6 { background-color: #d1f274 !important; } /* Level 6: Soft Chartreuse/Lime */
-.level-7 { background-color: #a4f962 !important; } /* Level 7: Bright Lime Green */
-.level-8 { background-color: #83f52a !important; } /* Level 8: Vibrant Spring Green */
-.level-9 { background-color: #5cef0a !important; } /* Level 9: Ultimate Neon Green Peak */
+/* 9-SHADE EXACT COLOR CODES */
+.level-1 { background-color: #ff5252 !important; }
+.level-2 { background-color: #ff5b5b !important; }
+.level-3 { background-color: #ff8e61 !important; }
+.level-4 { background-color: #ff9d6b !important; }
+.level-5 { background-color: #fcd573 !important; }
+.level-6 { background-color: #d1f274 !important; }
+.level-7 { background-color: #a4f962 !important; }
+.level-8 { background-color: #83f52a !important; }
+.level-9 { background-color: #5cef0a !important; }
 
-/* Nav Item Fix (Square corners as requested) */
-.nav-item.active { 
-    background-color: var(--primary-cyan); 
-    color: white; 
-    border-radius: 0; 
-}
-
-/* Link removal decoration */
-.bottom-nav { 
-    display: flex; 
-    height: 70px; 
-    width: 100%;
-}
-.nav-item:not(.track), 
-.nav-item:not(.track).active {
-    background-color: var(--primary-cyan); 
-    color: #1a5e4d; 
-}
-
-/* Le bouton Track est TOUJOURS vert */
-.nav-item.track, 
-.nav-item.track.active {
-    background-color: var(--accent-green);
-    color: #1a5e4d; 
-}
-
-/* ==========================================================================
-   NEW WORKPACK MODIFICATIONS: COMPLETED PILL VIEW STATES
-   ========================================================================== */
-
-/* Keeps the layout container centered and vertically consistent */
+/* COMPLETED PILL VIEW STATES */
 .task-card-wrapper.completed-pill-state {
     align-items: center;
 }
 
-/* Clean interactive pill architecture layout matching user prototype design precisely */
 .task-card-pill {
     display: flex;
     align-items: center;
     background-color: #ccf7ed; 
-    border-radius: 40px;       
+    border-radius: 40px;      
     padding: 10px 20px;
     flex-grow: 1;
     gap: 15px;
@@ -410,7 +387,6 @@ body {
     animation: foldIn 0.25s ease-out forwards;
 }
 
-/* Interactive custom check button reset styles */
 .btn-undo-complete {
     background: none;
     border: none;
@@ -422,7 +398,6 @@ body {
     justify-content: center;
 }
 
-/* White task capsule capsule title shield matching custom screenshot layout */
 .pill-title {
     background-color: #ffffff;
     border-radius: 20px;
@@ -438,4 +413,30 @@ body {
 @keyframes foldIn {
     from { opacity: 0; transform: translateY(-5px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* REORDERING & LONG-PRESS FLOATING CARD STYLES */
+.task-card-wrapper.floating-card {
+    transform: scale(1.03) translateY(-4px);
+    z-index: 100;
+    position: relative;
+    opacity: 0.92;
+    cursor: grabbing;
+}
+
+.task-card-wrapper.floating-card .task-card,
+.task-card-wrapper.floating-card .task-card-pill {
+    box-shadow: 0 14px 28px rgba(85, 214, 224, 0.35), 0 10px 10px rgba(0, 0, 0, 0.08) !important;
+}
+
+.task-card-wrapper.is-dragging {
+    opacity: 0.4;
+}
+
+.task-card-wrapper.drag-over-above {
+    border-top: 3px solid var(--primary-cyan);
+}
+
+.task-card-wrapper.drag-over-below {
+    border-bottom: 3px solid var(--primary-cyan);
 }

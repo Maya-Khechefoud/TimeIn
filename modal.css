@@ -105,7 +105,7 @@ input[type="text"]:focus {
     flex: 1;
 }
 
-/* Hide the ugly default browser checkbox circle */
+/* Hide the default browser checkbox circle */
 .category-radio input[type="radio"] {
     display: none;
 }
@@ -124,7 +124,7 @@ input[type="text"]:focus {
     transition: all 0.2s;
 }
 
-/* When checked, make it fully visible and add a distinct border border */
+/* When checked, make it fully visible and add a distinct border */
 .category-radio input[type="radio"]:checked + .radio-badge {
     opacity: 1;
     border-color: #1a5e4d;
@@ -173,4 +173,54 @@ input[type="text"]:focus {
 
 .btn-save-task:hover {
     background-color: #2edca9;
+}
+
+/* --- NOTIFICATION PREFERENCES LAYOUT --- */
+.notification-options-grid {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.alert-checkbox-wrapper {
+    flex: 1;
+    cursor: pointer;
+}
+
+/* Hide the native platform checkbox box */
+.alert-checkbox-wrapper input[type="checkbox"] {
+    display: none;
+}
+
+/* Custom interactive pill buttons */
+.custom-checkbox {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background-color: #f7fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #4a5568;
+    transition: all 0.2s ease;
+}
+
+.custom-checkbox i {
+    font-size: 0.95rem;
+    color: #a0aec0;
+    transition: color 0.2s;
+}
+
+/* Checked UI States: Illuminates to your distinct app brand themes */
+.alert-checkbox-wrapper input[type="checkbox"]:checked + .custom-checkbox {
+    background-color: #e6fffa;
+    border-color: #3ab294;
+    color: #3ab294;
+}
+
+.alert-checkbox-wrapper input[type="checkbox"]:checked + .custom-checkbox i {
+    color: #3feeb6;
 }

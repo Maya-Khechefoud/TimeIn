@@ -1,4 +1,4 @@
-// Global App State: Load all tasks or start empty (Perfect clean slate for new users)
+// Global App State: Load all tasks or start empty
 let tasks = JSON.parse(localStorage.getItem('myAppState')) || [];
 let currentEditTaskId = null;
 
@@ -6,7 +6,7 @@ function saveToLocalStorage() {
     localStorage.setItem('myAppState', JSON.stringify(tasks));
 }
 
-// Helper to format JavaScript date objects into your clean "DD / MM / YYYY" design layout
+// Helper to format JavaScript date objects into "DD / MM / YYYY" layout
 function formatDateString(dateObj) {
     const day = String(dateObj.getDate()).padStart(2, '0');
     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -14,7 +14,7 @@ function formatDateString(dateObj) {
     return `${day} / ${month} / ${year}`;
 }
 
-// Helper to format date into standard array matching format "DD/MM/YYYY" without spaces
+// Helper to format date into standard array matching format "DD/MM/YYYY"
 function formatStorageDateKey(dateObj) {
     const day = String(dateObj.getDate()).padStart(2, '0');
     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -22,7 +22,7 @@ function formatStorageDateKey(dateObj) {
     return `${day}/${month}/${year}`;
 }
 
-// Active Date Tracking Engine: Default to today's real live date on fresh load!
+// Active Date Tracking Engine
 let savedDateString = sessionStorage.getItem('activeScheduleDate');
 let currentDate;
 
@@ -30,7 +30,7 @@ if (savedDateString && savedDateString !== "25/03/2026" && savedDateString !== "
     const dateParts = savedDateString.split('/');
     currentDate = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
 } else {
-    currentDate = new Date(); // Automatically uses the live real-world date
+    currentDate = new Date();
     sessionStorage.setItem('activeScheduleDate', formatStorageDateKey(currentDate));
 }
 
@@ -49,22 +49,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const prevArrow = document.querySelectorAll('.nav-arrow')[0];
     const nextArrow = document.querySelectorAll('.nav-arrow')[1];
 
-    // Calculates if a date is Today, Yesterday, Tomorrow, or a standard weekday
     function updateDateDisplay() {
         if (datePill) {
             datePill.innerText = formatDateString(currentDate);
         }
 
-        // Calculate Human Readable Smart Titles
         if (dateHeaderText) {
             const realToday = new Date(); 
             
-            // Strip out hours, minutes, and seconds from our math so we are purely comparing day blocks
-            // Note: Ensuring static values evaluate accurately relative to June 9, 2026
             const targetDateMidnight = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
             const realTodayMidnight = new Date(realToday.getFullYear(), realToday.getMonth(), realToday.getDate());
             
-            // Calculate the exact mathematical difference in milliseconds, then convert to total days
             const timeDiff = targetDateMidnight.getTime() - realTodayMidnight.getTime();
             const dayDiff = Math.round(timeDiff / (1000 * 60 * 60 * 24));
 
@@ -80,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Save active target day to browser session memory so tracking pages stay synced without overwriting persistence defaults
         sessionStorage.setItem('activeScheduleDate', formatStorageDateKey(currentDate));
         renderTasks(); 
     }
@@ -105,11 +99,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const startField = document.getElementById('modalStartTime');
         const endField = document.getElementById('modalEndTime');
         const descField = document.getElementById('modalTaskDescription');
+        
+        const notifyCheckbox = document.getElementById('modalNotifyMe');
+        const alarmCheckbox = document.getElementById('modalSetAlarm');
 
         if (titleField) titleField.value = "";
         if (startField) startField.value = "";
         if (endField) endField.value = "";
         if (descField) descField.value = "";
+        
+        if (notifyCheckbox) notifyCheckbox.checked = false;
+        if (alarmCheckbox) alarmCheckbox.checked = false;
 
         const defaultRadio = document.querySelector('input[name="modalCategory"][value="Personal"]');
         if (defaultRadio) defaultRadio.checked = true;
@@ -193,7 +193,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         iconBadge = '☀️';
                 }
 
-                const taskDescription = task.description || "";
+                // Check if description exists and is non-empty
+                const taskDescription = (task.description && task.description.trim() !== "") ? task.description.trim() : null;
+                const bodyHTML = taskDescription 
+                    ? `<div class="card-body"><p>${taskDescription}</p></div>` 
+                    : '';
 
                 cardHTML = `
                     <div class="task-card-wrapper" data-id="${task.id}">
@@ -207,9 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span class="badge ${categoryClass}">${iconBadge} ${task.category}</span>
                                 <div class="title-field">${task.title}</div>
                             </div>
-                            <div class="card-body">
-                                <p>${taskDescription}</p> 
-                            </div>
+                            ${bodyHTML}
                             <div class="action-buttons">
                                 <button class="btn-delete"><i class="fa-solid fa-xmark"></i></button>
                                 <button class="btn-edit"><i class="fa-solid fa-paintbrush"></i></button>
@@ -224,6 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         attachCardActionListeners();
+        initDragAndDrop();
     }
 
     // --- CARD INTERACTIONS: CONTROLLERS ---
@@ -279,7 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     document.getElementById('modalTaskTitle').value = targetTask.title;
                     
-                    // FIXED: If time values are baseline dots, keep modal text inputs clean/blank
                     document.getElementById('modalStartTime').value = targetTask.startTime === "." ? "" : targetTask.startTime;
                     document.getElementById('modalEndTime').value = targetTask.endTime === "." ? "" : targetTask.endTime;
                     
@@ -293,9 +295,117 @@ document.addEventListener('DOMContentLoaded', () => {
                         categoryRadio.checked = true;
                     }
 
+                    const notifyCheckbox = document.getElementById('modalNotifyMe');
+                    const alarmCheckbox = document.getElementById('modalSetAlarm');
+                    if (notifyCheckbox) notifyCheckbox.checked = !!targetTask.notifyMe;
+                    if (alarmCheckbox) alarmCheckbox.checked = !!targetTask.setAlarm;
+
                     openModal(true);
                 }
             });
+        });
+    }
+
+    // --- LONG PRESS & DRAG-AND-DROP ENGINE ---
+    function initDragAndDrop() {
+        const wrappers = document.querySelectorAll('.task-card-wrapper');
+        let draggedWrapper = null;
+        let longPressTimer = null;
+        let isDragging = false;
+        let startY = 0;
+
+        wrappers.forEach(wrapper => {
+            function startPress(e) {
+                if (e.target.closest('button')) return;
+
+                const touch = e.touches ? e.touches[0] : e;
+                startY = touch.clientY;
+
+                longPressTimer = setTimeout(() => {
+                    isDragging = true;
+                    draggedWrapper = wrapper;
+                    draggedWrapper.classList.add('floating-card');
+                    
+                    if (navigator.vibrate) {
+                        navigator.vibrate(40);
+                    }
+                }, 350);
+            }
+
+            function movePress(e) {
+                const touch = e.touches ? e.touches[0] : e;
+                const moveY = touch.clientY;
+
+                if (!isDragging && Math.abs(moveY - startY) > 10) {
+                    clearTimeout(longPressTimer);
+                    return;
+                }
+
+                if (isDragging && draggedWrapper) {
+                    e.preventDefault();
+
+                    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+                    if (!elementBelow) return;
+
+                    const targetWrapper = elementBelow.closest('.task-card-wrapper');
+
+                    wrappers.forEach(w => w.classList.remove('drag-over-above', 'drag-over-below'));
+
+                    if (targetWrapper && targetWrapper !== draggedWrapper) {
+                        const rect = targetWrapper.getBoundingClientRect();
+                        const middleY = rect.top + rect.height / 2;
+
+                        if (touch.clientY < middleY) {
+                            targetWrapper.classList.add('drag-over-above');
+                        } else {
+                            targetWrapper.classList.add('drag-over-below');
+                        }
+                    }
+                }
+            }
+
+            function endPress(e) {
+                clearTimeout(longPressTimer);
+
+                if (isDragging && draggedWrapper) {
+                    const activeDropTarget = document.querySelector('.drag-over-above, .drag-over-below');
+
+                    if (activeDropTarget && activeDropTarget !== draggedWrapper) {
+                        const isAbove = activeDropTarget.classList.contains('drag-over-above');
+                        const draggedId = draggedWrapper.getAttribute('data-id');
+                        const targetId = activeDropTarget.getAttribute('data-id');
+
+                        const draggedIndex = tasks.findIndex(t => t.id === draggedId);
+                        const targetIndex = tasks.findIndex(t => t.id === targetId);
+
+                        if (draggedIndex !== -1 && targetIndex !== -1) {
+                            const [movedTask] = tasks.splice(draggedIndex, 1);
+                            let newIndex = tasks.findIndex(t => t.id === targetId);
+
+                            if (!isAbove) {
+                                newIndex += 1;
+                            }
+
+                            tasks.splice(newIndex, 0, movedTask);
+                            saveToLocalStorage();
+                        }
+                    }
+
+                    wrappers.forEach(w => w.classList.remove('floating-card', 'drag-over-above', 'drag-over-below'));
+                    isDragging = false;
+                    draggedWrapper = null;
+                    renderTasks();
+                }
+            }
+
+            wrapper.addEventListener('touchstart', startPress, { passive: false });
+            wrapper.addEventListener('touchmove', movePress, { passive: false });
+            wrapper.addEventListener('touchend', endPress);
+            wrapper.addEventListener('touchcancel', endPress);
+
+            wrapper.addEventListener('mousedown', startPress);
+            wrapper.addEventListener('mousemove', movePress);
+            wrapper.addEventListener('mouseup', endPress);
         });
     }
 
@@ -311,6 +421,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const descField = document.getElementById('modalTaskDescription');
             const descriptionInput = descField ? descField.value.trim() : "";
 
+            const notifyCheckbox = document.getElementById('modalNotifyMe');
+            const alarmCheckbox = document.getElementById('modalSetAlarm');
+            const notifyMeInput = notifyCheckbox ? notifyCheckbox.checked : false;
+            const setAlarmInput = alarmCheckbox ? alarmCheckbox.checked : false;
+
             if (titleInput === "") {
                 alert("Please give your task a title!");
                 return; 
@@ -321,22 +436,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (targetTask) {
                     targetTask.title = titleInput;
                     targetTask.category = selectedCategory;
-                    // FIXED: Uses single dot baseline fallback for clean aesthetic symmetry if input is empty
                     targetTask.startTime = startTimeInput || ".";
                     targetTask.endTime = endTimeInput || ".";
                     targetTask.description = descriptionInput;
+                    
+                    targetTask.notifyMe = notifyMeInput;
+                    targetTask.setAlarm = setAlarmInput;
                 }
             } else {
                 const newTask = {
                     id: "task-" + Date.now(),
                     title: titleInput,
                     category: selectedCategory,
-                    // FIXED: Uses single dot baseline fallback for clean aesthetic symmetry if input is empty
                     startTime: startTimeInput || ".",
                     endTime: endTimeInput || ".",
                     date: formatStorageDateKey(currentDate), 
                     completed: false,
-                    description: descriptionInput
+                    description: descriptionInput,
+                    
+                    notifyMe: notifyMeInput,
+                    setAlarm: setAlarmInput
                 };
                 tasks.push(newTask);
             }
@@ -347,10 +466,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Initialize layout and active tracking parameters
     updateDateDisplay();
 
-    // Navigation active state highlight helper
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
         item.addEventListener('click', () => {
