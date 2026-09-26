@@ -14,7 +14,7 @@ function formatDateString(dateObj) {
     return `${day} / ${month} / ${year}`;
 }
 
-// Helper to format date into standard array matching format "DD/MM/YYYY"
+// Helper to format date into standard string matching format "DD/MM/YYYY"
 function formatStorageDateKey(dateObj) {
     const day = String(dateObj.getDate()).padStart(2, '0');
     const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -22,13 +22,30 @@ function formatStorageDateKey(dateObj) {
     return `${day}/${month}/${year}`;
 }
 
+// Helper to parse "DD/MM/YYYY" back into Date object
+function parseStorageDateKey(dateStr) {
+    if (!dateStr) return new Date();
+    const parts = dateStr.split('/');
+    return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+}
+
+// Helper for XSS protection when rendering text strings inside innerHTML
+function escapeHTML(str) {
+    if (!str) return '';
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 // Active Date Tracking Engine
 let savedDateString = sessionStorage.getItem('activeScheduleDate');
 let currentDate;
 
 if (savedDateString && savedDateString !== "25/03/2026" && savedDateString !== "25 / 03 / 2026") {
-    const dateParts = savedDateString.split('/');
-    currentDate = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+    currentDate = parseStorageDateKey(savedDateString);
 } else {
     currentDate = new Date();
     sessionStorage.setItem('activeScheduleDate', formatStorageDateKey(currentDate));
@@ -48,6 +65,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateHeaderText = document.querySelector('.date-header-text'); 
     const prevArrow = document.querySelectorAll('.nav-arrow')[0];
     const nextArrow = document.querySelectorAll('.nav-arrow')[1];
+
+    // Repeat UI Elements
+    const repeatCheckbox = document.getElementById('modalRepeatCheckbox');
+    const repeatDaysContainer = document.getElementById('repeatDaysContainer');
+    const dayPills = document.querySelectorAll('.day-pill');
+
+    // --- REPEAT UI TOGGLE & PILL SELECTION ---
+    if (repeatCheckbox && repeatDaysContainer) {
+        repeatCheckbox.addEventListener('change', () => {
+            if (repeatCheckbox.checked) {
+                repeatDaysContainer.classList.remove('hidden');
+            } else {
+                repeatDaysContainer.classList.add('hidden');
+            }
+        });
+    }
+
+    dayPills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            pill.classList.toggle('active');
+        });
+    });
+
+    function getSelectedRepeatDays() {
+        const selectedDays = [];
+        document.querySelectorAll('.day-pill.active').forEach(pill => {
+            selectedDays.push(parseInt(pill.getAttribute('data-day-value'), 10));
+        });
+        return selectedDays;
+    }
+
+    function setSelectedRepeatDays(daysArray = []) {
+        dayPills.forEach(pill => {
+            const val = parseInt(pill.getAttribute('data-day-value'), 10);
+            if (daysArray.includes(val)) {
+                pill.classList.add('active');
+            } else {
+                pill.classList.remove('active');
+            }
+        });
+    }
 
     function updateDateDisplay() {
         if (datePill) {
@@ -111,6 +169,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (notifyCheckbox) notifyCheckbox.checked = false;
         if (alarmCheckbox) alarmCheckbox.checked = false;
 
+        if (repeatCheckbox) repeatCheckbox.checked = false;
+        if (repeatDaysContainer) repeatDaysContainer.classList.add('hidden');
+        setSelectedRepeatDays([]);
+
         const defaultRadio = document.querySelector('input[name="modalCategory"][value="Personal"]');
         if (defaultRadio) defaultRadio.checked = true;
     }
@@ -136,13 +198,41 @@ document.addEventListener('DOMContentLoaded', () => {
     if (addBtn) addBtn.addEventListener('click', (e) => { e.preventDefault(); openModal(false); });
     if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
 
+    // --- REPEATING MATCHING ENGINE ---
+    function shouldTaskAppearOnDate(task, targetDateObj) {
+        const targetDateMidnight = new Date(targetDateObj.getFullYear(), targetDateObj.getMonth(), targetDateObj.getDate());
+        const taskStartDate = parseStorageDateKey(task.date);
+        const taskStartMidnight = new Date(taskStartDate.getFullYear(), taskStartDate.getMonth(), taskStartDate.getDate());
+
+        // Do not render before creation date
+        if (targetDateMidnight < taskStartMidnight) {
+            return false;
+        }
+
+        // Non-repeating task match
+        if (!task.repeatDays || task.repeatDays.length === 0) {
+            return formatStorageDateKey(taskStartDate) === formatStorageDateKey(targetDateObj);
+        }
+
+        // Repeating task day-of-week match (0 = Sun, 1 = Mon, ..., 6 = Sat)
+        const dayOfWeek = targetDateObj.getDay();
+        return task.repeatDays.includes(dayOfWeek);
+    }
+
+    function isTaskCompletedForDate(task, dateStr) {
+        if (!task.repeatDays || task.repeatDays.length === 0) {
+            return !!task.completed;
+        }
+        return Array.isArray(task.completedDates) && task.completedDates.includes(dateStr);
+    }
+
     // --- THE RENDERING MACHINE ---
     function renderTasks() {
         if (!contentContainer) return;
         contentContainer.innerHTML = '';
 
         const targetDateString = formatStorageDateKey(currentDate);
-        const filteredTasks = tasks.filter(task => task.date === targetDateString);
+        const filteredTasks = tasks.filter(task => shouldTaskAppearOnDate(task, currentDate));
 
         if (filteredTasks.length === 0) {
             contentContainer.innerHTML = `
@@ -154,20 +244,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         filteredTasks.forEach(task => {
             let cardHTML = '';
+            const isCompletedToday = isTaskCompletedForDate(task, targetDateString);
 
-            if (task.completed) {
+            if (isCompletedToday) {
                 cardHTML = `
                     <div class="task-card-wrapper completed-pill-state" data-id="${task.id}">
                         <div class="time-column">
-                            <span>${task.startTime}</span>
+                            <span>${escapeHTML(task.startTime)}</span>
                             <div class="dotted-line"></div>
-                            <span>${task.endTime}</span>
+                            <span>${escapeHTML(task.endTime)}</span>
                         </div>
                         <div class="task-card-pill">
                             <button class="btn-undo-complete">
                                 <i class="fa-solid fa-circle-check"></i>
                             </button>
-                            <div class="pill-title">${task.title}</div>
+                            <div class="pill-title">${escapeHTML(task.title)}</div>
                         </div>
                     </div>
                 `;
@@ -175,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 let categoryClass = 'personal';
                 let iconBadge = '☀️';
 
-                switch(task.category.toLowerCase()) {
+                switch((task.category || '').toLowerCase()) {
                     case 'study':
                         categoryClass = 'study';
                         iconBadge = '🔵';
@@ -193,23 +284,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         iconBadge = '☀️';
                 }
 
-                // Check if description exists and is non-empty
                 const taskDescription = (task.description && task.description.trim() !== "") ? task.description.trim() : null;
                 const bodyHTML = taskDescription 
-                    ? `<div class="card-body"><p>${taskDescription}</p></div>` 
+                    ? `<div class="card-body"><p>${escapeHTML(taskDescription)}</p></div>` 
                     : '';
 
                 cardHTML = `
                     <div class="task-card-wrapper" data-id="${task.id}">
                         <div class="time-column">
-                            <span>${task.startTime}</span>
+                            <span>${escapeHTML(task.startTime)}</span>
                             <div class="dotted-line"></div>
-                            <span>${task.endTime}</span>
+                            <span>${escapeHTML(task.endTime)}</span>
                         </div>
                         <div class="task-card">
                             <div class="card-header">
-                                <span class="badge ${categoryClass}">${iconBadge} ${task.category}</span>
-                                <div class="title-field">${task.title}</div>
+                                <span class="badge ${categoryClass}">${iconBadge} ${escapeHTML(task.category)}</span>
+                                <div class="title-field">${escapeHTML(task.title)}</div>
                             </div>
                             ${bodyHTML}
                             <div class="action-buttons">
@@ -231,12 +321,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- CARD INTERACTIONS: CONTROLLERS ---
     function attachCardActionListeners() {
+        const targetDateString = formatStorageDateKey(currentDate);
+
         const deleteButtons = document.querySelectorAll('.btn-delete');
         deleteButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const cardWrapper = e.target.closest('.task-card-wrapper');
                 const taskId = cardWrapper.getAttribute('data-id');
-                tasks = tasks.filter(task => task.id !== taskId);
+                const targetTask = tasks.find(t => t.id === taskId);
+
+                if (!targetTask) return;
+
+                if (targetTask.repeatDays && targetTask.repeatDays.length > 0) {
+                    const removeAll = confirm("Delete all occurrences of this repeating task?\n\nPress OK to delete ALL occurrences, or Cancel to remove ONLY today's instance.");
+                    if (removeAll) {
+                        tasks = tasks.filter(task => task.id !== taskId);
+                    } else {
+                        // Remove current day from repeat schedule
+                        const currentDayIndex = currentDate.getDay();
+                        targetTask.repeatDays = targetTask.repeatDays.filter(d => d !== currentDayIndex);
+                    }
+                } else {
+                    tasks = tasks.filter(task => task.id !== taskId);
+                }
+
                 saveToLocalStorage();
                 renderTasks();
             });
@@ -248,8 +356,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cardWrapper = e.target.closest('.task-card-wrapper');
                 const taskId = cardWrapper.getAttribute('data-id');
                 const targetTask = tasks.find(task => task.id === taskId);
+
                 if (targetTask) {
-                    targetTask.completed = true;
+                    if (targetTask.repeatDays && targetTask.repeatDays.length > 0) {
+                        if (!Array.isArray(targetTask.completedDates)) {
+                            targetTask.completedDates = [];
+                        }
+                        if (!targetTask.completedDates.includes(targetDateString)) {
+                            targetTask.completedDates.push(targetDateString);
+                        }
+                    } else {
+                        targetTask.completed = true;
+                    }
                 }
                 saveToLocalStorage();
                 renderTasks();
@@ -262,8 +380,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cardWrapper = e.target.closest('.task-card-wrapper');
                 const taskId = cardWrapper.getAttribute('data-id');
                 const targetTask = tasks.find(task => task.id === taskId);
+
                 if (targetTask) {
-                    targetTask.completed = false;
+                    if (targetTask.repeatDays && targetTask.repeatDays.length > 0) {
+                        if (Array.isArray(targetTask.completedDates)) {
+                            targetTask.completedDates = targetTask.completedDates.filter(d => d !== targetDateString);
+                        }
+                    } else {
+                        targetTask.completed = false;
+                    }
                 }
                 saveToLocalStorage();
                 renderTasks();
@@ -288,6 +413,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     const descField = document.getElementById('modalTaskDescription');
                     if (descField) {
                         descField.value = targetTask.description || "";
+                    }
+
+                    if (repeatCheckbox) {
+                        const hasRepeat = targetTask.repeatDays && targetTask.repeatDays.length > 0;
+                        repeatCheckbox.checked = hasRepeat;
+                        if (hasRepeat) {
+                            repeatDaysContainer.classList.remove('hidden');
+                            setSelectedRepeatDays(targetTask.repeatDays);
+                        } else {
+                            repeatDaysContainer.classList.add('hidden');
+                            setSelectedRepeatDays([]);
+                        }
                     }
                     
                     const categoryRadio = document.querySelector(`input[name="modalCategory"][value="${targetTask.category}"]`);
@@ -364,7 +501,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            function endPress(e) {
+            function endPress() {
                 clearTimeout(longPressTimer);
 
                 if (isDragging && draggedWrapper) {
@@ -417,9 +554,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const titleInput = document.getElementById('modalTaskTitle').value.trim();
             const startTimeInput = document.getElementById('modalStartTime').value.trim();
             const endTimeInput = document.getElementById('modalEndTime').value.trim();
-            const selectedCategory = document.querySelector('input[name="modalCategory"]:checked').value;
+            const categoryRadio = document.querySelector('input[name="modalCategory"]:checked');
+            const selectedCategory = categoryRadio ? categoryRadio.value : "Personal";
+            
             const descField = document.getElementById('modalTaskDescription');
             const descriptionInput = descField ? descField.value.trim() : "";
+
+            const isRepeatEnabled = repeatCheckbox ? repeatCheckbox.checked : false;
+            const selectedDays = isRepeatEnabled ? getSelectedRepeatDays() : [];
 
             const notifyCheckbox = document.getElementById('modalNotifyMe');
             const alarmCheckbox = document.getElementById('modalSetAlarm');
@@ -431,6 +573,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return; 
             }
 
+            if (isRepeatEnabled && selectedDays.length === 0) {
+                alert("Please select at least one day to repeat the task!");
+                return;
+            }
+
             if (currentEditTaskId) {
                 const targetTask = tasks.find(task => task.id === currentEditTaskId);
                 if (targetTask) {
@@ -439,7 +586,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     targetTask.startTime = startTimeInput || ".";
                     targetTask.endTime = endTimeInput || ".";
                     targetTask.description = descriptionInput;
-                    
+                    targetTask.repeatDays = selectedDays;
                     targetTask.notifyMe = notifyMeInput;
                     targetTask.setAlarm = setAlarmInput;
                 }
@@ -452,11 +599,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     endTime: endTimeInput || ".",
                     date: formatStorageDateKey(currentDate), 
                     completed: false,
+                    completedDates: [],
                     description: descriptionInput,
-                    
+                    repeatDays: selectedDays,
                     notifyMe: notifyMeInput,
                     setAlarm: setAlarmInput
                 };
+
                 tasks.push(newTask);
             }
 

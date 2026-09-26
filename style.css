@@ -440,3 +440,85 @@ body {
 .task-card-wrapper.drag-over-below {
     border-bottom: 3px solid var(--primary-cyan);
 }
+
+/* REPEAT TASK STYLES */
+.repeat-section {
+    margin-top: 15px;
+    background-color: var(--bg-color);
+    border: 2px solid var(--light-cyan);
+    border-radius: 12px;
+    padding: 12px 15px;
+}
+
+.repeat-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: var(--text-dark);
+    cursor: pointer;
+}
+
+.repeat-toggle-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--accent-green);
+    cursor: pointer;
+}
+
+.repeat-days-container {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--primary-cyan);
+    transition: all 0.3s ease;
+}
+
+.repeat-days-container.hidden {
+    display: none;
+}
+
+.repeat-hint {
+    font-size: 0.8rem;
+    color: var(--text-gray);
+    margin-bottom: 10px;
+}
+
+/* Horizontal Row for Small Circular Day Buttons */
+.days-vertical-list,
+.days-horizontal-list {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Circular White Day Button Base */
+.day-pill {
+    background-color: #ffffff;
+    color: var(--text-dark);
+    border: 2px solid var(--light-cyan);
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Green Active/Selected State */
+.day-pill.active,
+.day-pill.selected {
+    background-color: var(--accent-green);
+    color: #0d4234;
+    border-color: var(--accent-green);
+    box-shadow: 0 3px 8px rgba(56, 239, 189, 0.4);
+    transform: scale(1.05);
+}
