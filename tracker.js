@@ -16,13 +16,47 @@ function formatStorageDateKey(dateObj) {
     return `${day}/${month}/${year}`;
 }
 
+function parseStorageDateKey(dateStr) {
+    if (!dateStr) return new Date();
+    const parts = dateStr.split('/');
+    return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+}
+
+// Helper engine: shared with schedule.js to evaluate task presence on active date
+function shouldTaskAppearOnDate(task, targetDateObj) {
+    const targetDateMidnight = new Date(targetDateObj.getFullYear(), targetDateObj.getMonth(), targetDateObj.getDate());
+    const taskStartDate = parseStorageDateKey(task.date);
+    const taskStartMidnight = new Date(taskStartDate.getFullYear(), taskStartDate.getMonth(), taskStartDate.getDate());
+
+    // Task cannot appear before creation date
+    if (targetDateMidnight < taskStartMidnight) {
+        return false;
+    }
+
+    // Non-repeating task match
+    if (!task.repeatDays || task.repeatDays.length === 0) {
+        return formatStorageDateKey(taskStartDate) === formatStorageDateKey(targetDateObj);
+    }
+
+    // Repeating task day-of-week match
+    const dayOfWeek = targetDateObj.getDay();
+    return task.repeatDays.includes(dayOfWeek);
+}
+
+// Helper engine: checks completion based on single completion status vs. repeated history array
+function isTaskCompletedForDate(task, dateStr) {
+    if (!task.repeatDays || task.repeatDays.length === 0) {
+        return !!task.completed;
+    }
+    return Array.isArray(task.completedDates) && task.completedDates.includes(dateStr);
+}
+
 // SMART DATE ENGINE: Always launch on today's live date for a fresh session!
 let savedDateString = sessionStorage.getItem('activeScheduleDate');
 let currentDate;
 
 if (savedDateString && savedDateString !== "25/03/2026" && savedDateString !== "25 / 03 / 2026") {
-    const dateParts = savedDateString.split('/');
-    currentDate = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+    currentDate = parseStorageDateKey(savedDateString);
 } else {
     currentDate = new Date(); // Fallback straight to today's real system date
     sessionStorage.setItem('activeScheduleDate', formatStorageDateKey(currentDate));
@@ -64,9 +98,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const dayTasks = tasks.filter(task => task.date === targetDateString);
+        // Filter tasks that validly appear on the active date (both non-repeating and active repeating)
+        const dayTasks = tasks.filter(task => shouldTaskAppearOnDate(task, currentDate));
+        
         const total = dayTasks.length;
-        const completed = dayTasks.filter(task => task.completed).length;
+        const completed = dayTasks.filter(task => isTaskCompletedForDate(task, targetDateString)).length;
         const uncompleted = total - completed;
         const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
@@ -74,10 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (completedText) completedText.innerText = completed;
         if (uncompletedText) uncompletedText.innerText = uncompleted;
 
-        // FIXED: Now maps progress flawlessly across 9 bars instead of 7 so 100% fills up completely!
+        // Maps progress across 9 visual level bars
         const barsToLightUp = total > 0 ? Math.ceil((percentage / 100) * 9) : 0;
 
-        // FIXED: Loop updated to parse and clear elements through level-9 safely
         for (let i = 1; i <= 9; i++) {
             const barElement = document.querySelector(`.level-${i}`);
             if (barElement) {

@@ -337,7 +337,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (removeAll) {
                         tasks = tasks.filter(task => task.id !== taskId);
                     } else {
-                        // Remove current day from repeat schedule
                         const currentDayIndex = currentDate.getDay();
                         targetTask.repeatDays = targetTask.repeatDays.filter(d => d !== currentDayIndex);
                     }
